@@ -17,167 +17,84 @@ class RobotControl
 
 	public void scenario(int barHeights[], int blockHeights[])
 	{
-
-
-
-		int h = 2;         
-		int w = 1;         
-		int d = 0;        
-		int currentBlock = blockHeights.length -1;  
-		int sourceHt = 0; 
-		int currentBar = 0;
-		int contractAmt = 7;
-		int contract = 0;
-		int targetCol1Ht = 0; 
-		int targetCol2Ht = 0;    
-
-
-
-		int blockHt = 3;
-
-
-
-		for (int i = 0; i < blockHeights.length; i++){
-			sourceHt += blockHeights[i];
-			//for loop to determine how many blocks are in the array, and then making that number the sourceHt
-
-		}			
-
-
-
-		int clearance = 12;  
-
-		while ( h < clearance + 1 ) 
-		{
-
-			r.up();     
-
-			h++;
+		//initial height, width, and depth of the arm.
+		//robot methods:
+		//r.up()
+		//r.extend()
+		//r.lower()
+		//r.raise()
+		//r.contract()
+		//r.down() 
+		//r.pick()
+		//r.drop()
+		int h = 2;
+		int w = 1;
+		int d = 0;
+		int totalStack = 0;
+		int sumOfAllBlocks = 0;
+		for(int k = 0; k<blockHeights.length;k++) {
+			sumOfAllBlocks += blockHeights[k];
 		}
 
-		while (sourceHt > 0){
-			//This while loop is wrapped around the whole program, while the Source Height is more than 0, the program loops till this condition is met
-
-			int extendAmt = 10;
-
-			while (d > 0){
-
-				r.raise();
-				d--;
+		int highestBar = 0;
+		for(int k = 0; k<barHeights.length;k++) {
+			if(barHeights[k] > highestBar) {
+				highestBar = barHeights[k];
 			}
+		}
 
-			while ( w < extendAmt )
-			{
-
-				r.extend();
-
-				w++;
+		for(int i=0;i<blockHeights.length;i++) {
+			int currentBlock = blockHeights[blockHeights.length -i - 1]; //height of the topmost block
+			int totalHeight = 0; //total height to be raised
+			
+			if(highestBar > sumOfAllBlocks) {
+				totalHeight = highestBar;
 			}
-
-
-			while (h - d > sourceHt + 1) 
-
-			{
-
-				r.lower();
-				
-				d++;
+			else {
+				totalHeight = sumOfAllBlocks;
 			}
-
-
-			r.pick();
-			sourceHt -= blockHeights[currentBlock];
-
-			while ( d > 0)
-			{
-				r.raise();
-				d--;
-			} 
-
-			//The previous block of code just after while (sourceHt > 0){ controls the robot arm for all blocks, it raises, extends, lowers, picks and raises again
-
-			if (blockHeights[currentBlock] == 1)
-			{
-				//if loop for blockHeights of 1, the program contracts to 9, which is to column 1
-				contractAmt = 9;
-
-
-				while ( contractAmt > 0 )
-				{
-					r.contract();
-					contractAmt--;
-					w--;
-				}
-				while ( (h - 1) - d - blockHeights[currentBlock] > targetCol1Ht)   
-				{
-					r.lower();
-					d++;
-				}
-				r.drop();
-				targetCol1Ht += blockHeights[currentBlock];
-				//targetCol1Ht is updated with the currentBlock
-				currentBlock--;
-			}
-			else if
-			(blockHeights[currentBlock] == 2)
-			{
-				//else if loop for blockHeights of 2, the program contracts to 8, which is to column 2
-
-				contractAmt = 8; 
-
-
-				while ( contractAmt > 0 )
-				{
-					r.contract();
-					contractAmt--;
-					w--;
-				}
-				while ( (h - 1) - d - blockHeights[currentBlock] > targetCol2Ht)   
-				{
-					r.lower();
-					d++;
-
-				}
-				r.drop();
-				targetCol2Ht += blockHeights[currentBlock];
-				//targetCol2Ht is updated with currentBlock
-				currentBlock--;
-				//This takes away the block just placed from sourceHt
-			}
-
-			else if (blockHeights[currentBlock] == 3)
-			{
-				//else if loop for blockHeights of 2, the program contracts to 7, which is to the column where the bars start
-				contractAmt = 7 - contract++;
-				//changing the contractAmt according to what block it is
-				while ( contractAmt > 0 )
-				{
-					r.contract();
-					contractAmt--;
-					w--;
-				}
-
-
-
-				while (h - d - blockHt > barHeights[currentBar] + 1)
-				{
-					r.lower();
-
-					d++;
-				}
-
-				r.drop();
-				contractAmt--;
-				currentBar++;
-				currentBlock--;
-
-				while (d > 0)
-				{
+			while(h-d < totalHeight + 1) {
+				if(d > 0) {
 					r.raise();
 					d--;
 				}
-
+				else {
+					r.up();
+					h++;
+				}
 			}
+			while(w<10) {
+				r.extend();
+				w++;
+			}
+			while(h-d-1 > sumOfAllBlocks) {
+				r.lower();
+				d++;
+					
+			}		
+			r.pick();
+			while(h-d-currentBlock < highestBar+ 1) {
+				if(d > 0) {
+					r.raise();
+					d--;
+				}
+				else {
+					r.up();
+					h++;
+				}
+			}
+			while(w>1) {
+				r.contract();
+				w--;
+			}
+			while(h-d-currentBlock > totalStack + 1) {
+				r.lower();
+				d++;
+			}
+			r.drop();
+			totalStack += currentBlock;
+			sumOfAllBlocks -= currentBlock;
+
 		}
 	}
 }
