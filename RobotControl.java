@@ -30,7 +30,8 @@ class RobotControl
 		int h = 2;
 		int w = 1;
 		int d = 0;
-		int totalStack = 0;
+		int totalStackOne = 0;
+		int totalStackTwo = 0;
 		int sumOfAllBlocks = 0;
 		for(int k = 0; k<blockHeights.length;k++) {
 			sumOfAllBlocks += blockHeights[k];
@@ -42,6 +43,9 @@ class RobotControl
 				highestBar = barHeights[k];
 			}
 		}
+		
+		int threeDrop = 3;
+		int threeIndex = threeDrop - 3;
 
 		for(int i=0;i<blockHeights.length;i++) {
 			int currentBlock = blockHeights[blockHeights.length -i - 1]; //height of the topmost block
@@ -73,7 +77,22 @@ class RobotControl
 					
 			}		
 			r.pick();
-			while(h-d-currentBlock < highestBar+ 1) {
+			int highestAtMoment = 0;
+			if(currentBlock == 3) {
+				highestAtMoment = highestBar - currentBlock;
+			}
+			else {
+				if(totalStackTwo > totalStackOne || currentBlock == 2) {
+					highestAtMoment = totalStackTwo;
+				}
+				else {
+					highestAtMoment = totalStackOne;
+				}
+				if(highestBar > highestAtMoment) {
+					highestAtMoment = highestBar;
+				}
+			}
+			while(h-d-currentBlock < highestAtMoment+ 1) {
 				if(d > 0) {
 					r.raise();
 					d--;
@@ -83,18 +102,58 @@ class RobotControl
 					h++;
 				}
 			}
-			while(w>1) {
-				r.contract();
-				w--;
+			if(currentBlock == 3) {
+				while(w > threeDrop) {
+					r.contract();
+					w--;
+				}
+				while(h-d-currentBlock > barHeights[threeIndex] + 1) {
+					r.lower();
+					d++;
+				}
+				r.drop();
+				if(barHeights[threeIndex+ 1] + currentBlock > highestBar) {
+					highestBar = barHeights[threeIndex] + currentBlock;
+				}
+				threeDrop++;
+				threeIndex = threeDrop - 3;
 			}
-			while(h-d-currentBlock > totalStack + 1) {
-				r.lower();
-				d++;
+			else {
+				if(currentBlock == 1) {
+					while(w>1) {
+						r.contract();
+						w--;
+					}
+					
+					while(h-d-currentBlock > totalStackOne + 1) {
+						r.lower();
+						d++;
+					}
+					totalStackOne += currentBlock;
+				}
+
+				if(currentBlock == 2) {
+					while(w>2) {
+						r.contract();
+						w--;
+					}
+					
+					while(h-d-currentBlock > totalStackTwo + 1) {
+						r.lower();
+						d++;
+					}
+					totalStackTwo += currentBlock;
+				}
+				r.drop();
+
+
 			}
-			r.drop();
-			totalStack += currentBlock;
+		
+			
+		
 			sumOfAllBlocks -= currentBlock;
 
 		}
+		
 	}
 }
